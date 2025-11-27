@@ -6,14 +6,15 @@ Expect any errors from the scripts. I will probably update this tommorow.
 
 ## ⚡ Features
 - Simple account system (based on Silk-Forum)
-- Building SilkOS (not implemented)
-- Viewable container build status (not implemented)
+- Building SilkOS
+- Viewable container build status
 
 ## ⚙️ Usage
 
 ### Requirements
 - `python3`
 - `flask`, `flask_cors`
+- `docker`
 
 ### Running the app
 To run the app, type in the following command:
