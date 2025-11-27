@@ -348,6 +348,26 @@ def delete_container(container_id):
     except docker.errors.APIError as e:
         return jsonify({"status": "Error", "message": str(e)}), 500
 
+@app.route("/api/containers/delete_all", methods=['DELETE'])
+def delete_all_containers():
+    try:
+        db = sqlite3.connect("accounts.db")
+        cur = db.cursor()
+        res = cur.execute("SELECT id FROM containers")
+        container_ids = res.fetchall()
+        for container_id in container_ids:
+            try:
+                container = docker_client.containers.get(container_id[0])
+                container.remove(force=True)
+            except docker.errors.NotFound:
+                pass
+        cur.execute("DELETE FROM containers")
+        db.commit()
+        db.close()
+        return jsonify({"status": "Success"})
+    except Exception as e:
+        return jsonify({"status": "Error", "message": str(e)}), 500
+
 @app.route("/api/containers/<container_id>/build", methods=['POST'])
 def build_container(container_id):
     try:
