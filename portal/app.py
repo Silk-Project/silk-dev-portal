@@ -322,7 +322,7 @@ def list_containers():
 def create_container():
     container_name = f"silkos-build-container-{random.randint(1000, 9999)}"
     try:
-        container = docker_client.containers.run("ubuntu:22.04", detach=True, name=container_name, tty=True)
+        container = docker_client.containers.run("ubuntu:24.04", detach=True, name=container_name, tty=True)
         db = sqlite3.connect("accounts.db")
         cur = db.cursor()
         cur.execute("INSERT INTO containers VALUES (?,?,?,?,?)", (container.id, container.name, container.status, "Inactive", time.time()))
