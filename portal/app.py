@@ -369,7 +369,7 @@ def build_container(container_id):
 
                     # Stream the output of the command
                     exit_code, stream = container.exec_run(
-                        "sh -c 'apt-get update && apt-get install -y sudo git && useradd -m -s /bin/bash builder && usermod -aG sudo builder && echo \"builder ALL=(ALL) NOPASSWD: ALL\" >> /etc/sudoers && su builder -c \"git clone https://github.com/CommandCrafterx/SilkOS.git /home/builder/SilkOS && cd /home/builder/SilkOS && ./Meta/silkos.sh run\"'",
+                        "sh -c 'apt-get update && apt-get install -y sudo git build-essential cmake curl libmpfr-dev libmpc-dev libgmp-dev e2fsprogs ninja-build qemu-system-gui qemu-system-x86 qemu-utils ccache rsync unzip texinfo libssl-dev zlib1g-dev && useradd -m -s /bin/bash builder && usermod -aG sudo builder && echo \"builder ALL=(ALL) NOPASSWD: ALL\" >> /etc/sudoers && su builder -c \"git clone https://github.com/CommandCrafterx/SilkOS.git /home/builder/SilkOS && cd /home/builder/SilkOS && ./Meta/silkos.sh run\"'",
                         stream=True,
                         user='root'
                     )
