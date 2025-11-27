@@ -250,7 +250,6 @@ def register():
 
         current_time = time.time()
         expires = current_time + 600
-
         # Save authentication code and info into database
         db = sqlite3.connect("accounts.db")
         cur = db.cursor()
@@ -285,7 +284,6 @@ def create_account():
             return {
                 "status":"Admin Password incorrect"
             }, 403
-        
         # Get password hash from the auth table
         db = sqlite3.connect("accounts.db")
         cur = db.cursor()
@@ -293,7 +291,6 @@ def create_account():
         user_pass = res.fetchone()
 
         print(user_pass)
-        
         # Add account to the database
         cur.execute("INSERT INTO accounts (user, password_hash) VALUES (?,?)", (username, hash_string(user_pass)))
         db.commit()
@@ -374,10 +371,8 @@ def build_container(container_id):
         container = docker_client.containers.get(container_id)
         log_path = os.path.join(app.root_path, "tmp", f"{container_id}.log")
 
-        # Ensure the tmp directory exists
         os.makedirs(os.path.join(app.root_path, "tmp"), exist_ok=True)
 
-        # Run the build script in the background
         def run_build():
             with open(log_path, "w") as log_file:
                 try:
@@ -387,13 +382,36 @@ def build_container(container_id):
                     db.commit()
                     db.close()
 
-                    # Stream the output of the command
+                    build_cmd = (
+                        # Install Dependencies
+                        "sh -c '"
+                        "apt-get update && "
+                        "apt-get install -y sudo git build-essential cmake curl "
+                        "libmpfr-dev libmpc-dev libgmp-dev e2fsprogs ninja-build "
+                        "qemu-system-gui qemu-system-x86 qemu-utils ccache rsync unzip "
+                        "texinfo libssl-dev zlib1g-dev && "
+
+                        # Add builder user if it dosent exist
+                        "id -u builder >/dev/null 2>&1 || useradd -m -s /bin/bash builder && "
+
+                        # Add builder User to sudoers file
+                        "id -u builder >/dev/null 2>&1 && usermod -aG sudo builder && "
+                        "grep -qxF \"builder ALL=(ALL) NOPASSWD: ALL\" /etc/sudoers || "
+                        "echo \"builder ALL=(ALL) NOPASSWD: ALL\" >> /etc/sudoers && "
+
+                        # Build Process
+                        "su builder -c \""
+                        "git clone https://github.com/CommandCrafterx/SilkOS.git /home/builder/SilkOS && "
+                        "cd /home/builder/SilkOS && "
+                        "./Meta/silkos.sh build"
+                        "\"'"
+                    )
+
                     exit_code, stream = container.exec_run(
-                        "sh -c 'apt-get update && apt-get install -y sudo git build-essential cmake curl libmpfr-dev libmpc-dev libgmp-dev e2fsprogs ninja-build qemu-system-gui qemu-system-x86 qemu-utils ccache rsync unzip texinfo libssl-dev zlib1g-dev && useradd -m -s /bin/bash builder && usermod -aG sudo builder && echo \"builder ALL=(ALL) NOPASSWD: ALL\" >> /etc/sudoers && su builder -c \"git clone https://github.com/CommandCrafterx/SilkOS.git /home/builder/SilkOS && cd /home/builder/SilkOS && ./Meta/silkos.sh build\"'",
+                        build_cmd,
                         stream=True,
                         user='root'
                     )
-
 
                     for chunk in stream:
                         log_file.write(chunk.decode('utf-8'))
@@ -401,12 +419,13 @@ def build_container(container_id):
 
                     db = sqlite3.connect("accounts.db")
                     cur = db.cursor()
-                    if exit_code == 0:
-                        cur.execute("UPDATE containers SET build_status='Success' WHERE id=?", (container_id,))
-                    else:
-                        cur.execute("UPDATE containers SET build_status='Failed' WHERE id=?", (container_id,))
+                    cur.execute(
+                        "UPDATE containers SET build_status=? WHERE id=?",
+                        ("Success" if exit_code == 0 else "Failed", container_id)
+                    )
                     db.commit()
                     db.close()
+
                 except Exception as e:
                     log_file.write(str(e))
                     db = sqlite3.connect("accounts.db")
@@ -418,6 +437,7 @@ def build_container(container_id):
         threading.Thread(target=run_build).start()
 
         return jsonify({"status": "Success", "message": "Build started"})
+
     except docker.errors.NotFound:
         return jsonify({"status": "Error", "message": "Container not found"}), 404
     except docker.errors.APIError as e:
