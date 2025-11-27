@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Silk Developer Portal - Login</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="icon" type="image/x-icon" href="silkoslogo.png">
+    <style>
+        body {
+            font-family: 'Inter', Arial, sans-serif;
+            background-color: #09040C;
+            color: #F2E9F7;
+            margin: 0;
+            padding: 0;
+        }
+        html {
+            scroll-behavior: smooth;
+        }
+        .bg-primary-dark { background-color: #09040C; }
+        .bg-primary-medium { background-color: rgba(9, 4, 12, 0.9); }
+        .bg-footer-dark { background-color: rgba(6, 2, 8, 0.9); }
+        .text-primary-accent { color: #B153DD; }
+        .hover-bg-accent:hover { background-color: #7720A2; }
+        
+        /* Utility */
+        .hidden {
+            display: none;
+        }
+        .container {
+            max-width: 1280px;
+            margin-left: auto;
+            margin-right: auto;
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+
+        /* Header */
+        header {
+            background-color: rgba(9, 4, 12, 0.7); /* bg-primary-medium/70 */
+            backdrop-filter: blur(12px); /* backdrop-blur-md */
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            border-bottom: 1px solid #1f2937; /* border-gray-800 */
+        }
+        .header-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 4rem; /* h-16 */
+        }
+        .logo-link {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: #F2E9F7;
+        }
+        .logo-link img {
+            height: 2rem; /* h-8 */
+            width: 2rem; /* w-8 */
+            margin-right: 0.75rem; /* space-x-3 */
+        }
+        .logo-link span {
+            font-size: 1.25rem; /* text-xl */
+            font-weight: 700; /* font-bold */
+        }
+        .account-btn {
+            display: flex;
+            flex-direction: row;
+            gap: 10px;
+            align-items: center;
+            color: #9ca3af;
+            user-select: none;
+            transition: 0.2s;
+            cursor: pointer;
+            border: none;
+            background-color: none;
+        }
+        .account-btn:hover {
+            color: #fff;
+        }
+        .account-btn p {
+            font-size: 14px;
+        }
+        .vl {
+            border-left: 1px solid rgba(77, 77, 77, 0.425);
+            height: 35px;
+        }
+
+        /* Login Box */
+        main {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 82vh;
+            background: linear-gradient(to bottom, #5c0086, #180124);
+        }
+
+        #login-container {
+            display: flex;
+            flex-direction: column;
+            border: solid 1px#a5a5a550;
+            background-color: #0c01137a;
+            z-index: 10;
+            padding: 30px 30px;
+            width: 100%;
+            max-width: 400px;
+            border-radius: 30px;
+            box-shadow: 2px 2px 10px #ffffff13;
+        }
+
+        #extras {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 35px;
+            color: white;
+        }
+
+        #extras a {
+            color: white;
+        }
+
+        #registerForm h1 {
+            text-align: center;
+        }
+
+        #form {
+            display: flex;
+            margin-top: 30px;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .input-group input {
+            padding: 10px;
+            border-radius: 8px;
+            border: none;
+            outline: none;
+            background-color: #ffffffd3;
+            box-shadow: 0 0 0 0px #a5a5a550;
+        }
+
+        .input-group input:focus {
+            box-shadow: 0 0 0 2px #B153DD;
+        }
+
+        #form button {
+            padding: 10px;
+            border-radius: 8px;
+            border: solid 1px #a5a5a550;
+            color: white;
+            font-size: 18px;
+        }
+
+        #sign-error {
+            display: none;
+            color:rgb(255, 197, 197);
+            text-align: center;
+        }
+
+        /* Desktop Navigation */
+        .desktop-nav {
+            display: none;
+            column-gap: 0.25rem; /* space-x-1 */
+        }
+        .nav-link {
+            padding: 0.5rem 1rem; /* px-4 py-2 */
+            border-radius: 0.375rem; /* rounded-md */
+            color: #d1d5db; /* text-gray-300 */
+            text-decoration: none;
+            transition: color 0.2s, background-color 0.2s;
+        }
+        .nav-link:hover {
+            background-color: #374151; /* hover:bg-gray-700 */
+            color: #fff; /* hover:text-white */
+        }
+
+        /* Desktop Socials */
+        .desktop-socials {
+            display: none;
+            align-items: center;
+            column-gap: 1rem; /* space-x-4 */
+        }
+        .social-link {
+            color: #9ca3af; /* text-gray-400 */
+            transition: color 0.2s;
+        }
+        .social-link:hover {
+            color: #fff;
+        }
+        .social-link i {
+            font-size: 1.25rem; /* text-xl */
+        }
+
+        /* Mobile Menu */
+        .mobile-menu-wrapper {
+            display: flex;
+            flex-direction: row;
+            justify-content: flex-end;
+            width: 100px;
+            align-items: center;
+            gap: 15px;
+        }
+        .mobile-menu-btn {
+            color: #fff;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.5rem; /* text-2xl */
+        }
+        .mobile-menu-btn:focus {
+            outline: none;
+        }
+
+        #mobile-menu {
+            background-color: #111827; /* bg-gray-900 */
+        }
+        #mobile-menu nav {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1rem; /* p-4 */
+            row-gap: 0.5rem; /* space-y-2 */
+        }
+        #mobile-menu .nav-link {
+            display: block;
+            width: 100%;
+            text-align: center;
+        }
+        #mobile-menu .mobile-socials {
+            display: flex;
+            align-items: center;
+            column-gap: 1.5rem; /* space-x-6 */
+            padding-top: 1rem; /* pt-4 */
+        }
+        #mobile-menu .social-link i {
+            font-size: 1.5rem; /* text-2xl */
+        }
+
+        /* Responsive (md) */
+        @media (min-width: 900px) {
+            .desktop-nav {
+                display: flex;
+            }
+            .desktop-socials {
+                display: flex;
+            }
+            .mobile-menu-wrapper {
+                display: none;
+            }
+            #mobile-menu {
+                display: none !important; /* md:hidden */
+            }
+        }
+
+        /* Buttons */
+        .btn {
+            color: #fff;
+            font-weight: 600; /* font-semibold */
+            padding: 0.75rem 1.5rem; /* py-3 px-6 */
+            border-radius: 0.5rem; /* rounded-lg */
+            text-decoration: none;
+            transition: transform 0.2s, background-color 0.2s;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* shadow-lg */
+            display: inline-flex;
+            align-items: center;
+            column-gap: 0.5rem; /* space-x-2 */
+        }
+        .btn:hover {
+            transform: scale(1.05); /* hover:scale-105 */
+        }
+        .btn-secondary {
+            background-color: #1f2937; /* bg-gray-800 */
+        }
+        .btn-secondary:hover {
+            background-color: #374151; /* hover:bg-gray-700 */
+        }
+        .btn-primary {
+            background-color: #B153DD; /* bg-primary-accent */
+        }
+        .btn-primary:hover {
+            background-color: #7720A2; /* from custom hover-bg-accent */
+        }
+
+        /* Footer */
+        footer {
+            background-color: rgba(6, 2, 8, 0.9); /* bg-footer-dark */
+            text-align: center;
+            padding: 1.5rem 0; /* py-6 */
+        }
+        footer p {
+            color: #9ca3af; /* text-gray-400 */
+        }
+
+    </style>
+</head>
+<body class="bg-primary-dark">
+
+    <header>
+        <div class="container">
+            <div class="header-inner">
+                <a href="index.html" class="logo-link">
+                    <img src="silkoslogo.svg" alt="SilkOS Logo">
+                    <span>Silk Project [DEV]</span>
+                </a>
+
+                <nav class="desktop-nav">
+                    <a href="index.html" class="nav-link">Main</a>
+                    <a href="manage.html" class="nav-link">Manage</a>
+                    <a href="about.html" class="nav-link">About</a>
+                </nav>
+                
+                <div class="desktop-socials">
+                    <div class="account-btn" onclick="account()">
+                        <i class="fa fa-user"></i>
+                        <p class="account-name">Account</p>
+                    </div>
+                    <div class="vl"></div>
+                    <a href="feed.xml" class="social-link"><i class="fa fa-rss-square"></i></a>
+                    <a href="mailto:commandcrafter95@gmail.com" class="social-link"><i class="fa fa-envelope"></i></a>
+                    <a href="https://github.com/CommandCrafterx/silkos" class="social-link"><i class="fab fa-github"></i></a>
+                </div>
+
+                <div class="mobile-menu-wrapper">
+                    <div class="account-btn" onclick="account()">
+                        <i class="fa fa-user"></i>
+                        <p class="account-name">Account</p>
+                    </div>
+                    <div class="vl"></div>
+                    <button id="mobile-menu-button" class="mobile-menu-btn">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+         <div id="mobile-menu" class="hidden">
+            <nav>
+                <a href="index.html" class="nav-link">Main</a>
+                <a href="manage.html" class="nav-link">Manage</a>
+                <a href="about.html" class="nav-link">About</a>
+                <div class="mobile-socials">
+                    <a href="feed.xml" class="social-link"><i class="fa fa-rss-square"></i></a>
+                    <a href="mailto:commandcrafter95@gmail.com" class="social-link"><i class="fa fa-envelope"></i></a>
+                    <a href="https://github.com/CommandCrafterx/silkos" class="social-link"><i class="fab fa-github"></i></a>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <div id="login-container">
+            <div id="registerForm" action="http://127.0.0.1:5000/login/" method="post">
+                <h1>Welcome back!</h1>
+                <div id="form">
+                    <div class="input-group">
+                        <label for="username">Username:</label>
+                        <input type="text" id="username" name="user" placeholder="Big G" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="password">Password:</label>
+                        <input type="password" id="password" name="password" placeholder="****" required>
+                    </div>
+                    <div id="sign-error">The Backend Server was not found</div>
+                    <button class="btn-primary" onclick="login()">Login</button>
+                </div>
+            </div>
+            <div id="extras">
+                <a href="register.html">Don't have an account?</a>
+                <a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ">Want a cookie?</a>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-footer-dark">
+        <p>&copy; 2025 The Silk Project.</p>
+    </footer>
+
+    <script>
+        // JavaScript for mobile menu toggle
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const errtext = document.getElementById("sign-error");
+        let logged_in = false;
+
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        async function validate () {
+            const account = document.getElementsByClassName("account-name");
+            try {
+                const token = localStorage.getItem("silk-token")
+                const response = await fetch("http://127.0.0.1:5000/validate/", {
+                    method: "POST",
+                    headers: {
+                        "Content-type": "application/json; charset=UTF-8"
+                    },
+                    body: JSON.stringify({
+                        token: token
+                    })
+                });
+                const data = await response.json();
+                server_active = true;
+                if (data.status === "Success") {
+                    logged_in = true;
+                    account[0].innerText = data.username;
+                    account[1].innerText = data.username;
+                    window.location.href = "manage.html";
+                }
+            } catch (err) {
+                console.error(`Failed to fetch from server. ${err}`)
+            }
+        }
+
+        validate()
+
+        async function login () {
+            const user = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+            const response = await fetch("http://127.0.0.1:5000/login/", {
+                method: "POST",
+                headers: {
+                    "Content-type": "application/json; charset=UTF-8"
+                },
+                body: JSON.stringify({
+                    user: user,
+                    password: password
+                })
+            });
+            const data = await response.json();
+
+            if (data.status === "Success") {
+                console.log(data.token)
+                localStorage.setItem("silk-token", data.token);
+                localStorage.setItem("user", user);
+                errtext.style.display = "none";
+                window.location.href = "index.html";
+            } else {
+                errtext.style.display = "block";
+                errtext.innerText = data.status;
+            }
+        }
+
+        function account () {
+            if (!logged_in) {
+                window.location.href = "login.html";
+            } else {
+                window.location.href = "account.html";
+            }
+        }
+    </script>
+</body>
+</html>
