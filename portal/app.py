@@ -401,7 +401,7 @@ def build_container(container_id):
 
                         # Build Process
                         "su builder -c \""
-                        "git clone https://github.com/CommandCrafterx/SilkOS.git /home/builder/SilkOS && "
+                        "git clone --depth 1 https://github.com/CommandCrafterx/SilkOS.git /home/builder/SilkOS && "
                         "cd /home/builder/SilkOS && "
                         "./Meta/silkos.sh build"
                         "\"'"
