@@ -1,2 +1,3 @@
 .venv
 portal/__pycache__/app.cpython-312.pyc
+portal/accounts.db
