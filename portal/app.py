@@ -461,3 +461,6 @@ def page_not_found(error):
     return {
         "status":"Not found"
     }, 404
+
+if __name__ == '__main__':
+    app.run(port=5000, debug=True)
