@@ -106,8 +106,8 @@
             background-color: #0c01137a;
             z-index: 10;
             padding: 40px 90px;
-            width: 100%;
             max-width: 600px;
+            width: 100%;
             border-radius: 30px;
             box-shadow: 2px 2px 10px #ffffff13;
             gap: 10px;
@@ -160,6 +160,15 @@
 
         #toolbox i {
             margin: 0 8px 0 3px;
+        }
+
+        #statusload {
+            margin: 5px 0 5px 0;
+            display: none;
+        }
+
+        #throbber {
+            font-size: 25px;
         }
 
         .tool-btn {
@@ -367,6 +376,30 @@
             overflow: auto;
         }
 
+        #close-log-btn {
+            position: absolute;
+            top: 10%;
+            right: 10%;
+            font-size: 25px;
+            border: none;
+            color: white;
+            width: 35px;
+            height: 35px;
+            border: solid 1px #1f2937;
+            border-radius: 10px;
+            background: none;
+            transition: 0.3s all;
+            line-height: 5px;
+        }
+
+        #close-log-btn:hover {
+            scale: 1.1;
+        }
+
+        #close-log-btn:active{
+            scale: 1.05;
+        }
+
         #log-output {
             white-space: pre-wrap;
             font-family: monospace;
@@ -434,6 +467,10 @@
                     <button id="create-container-btn" class="tool-btn"><i class="fa fa-plus"></i>New Container</button>
                     <button id="delete-containers-btn" class="tool-btn"><i class="fa fa-trash"></i>Delete Containers</button>
                 </div>
+                <div id="statusload">
+                    <i id="throbber" class="fa-solid fa-cog fa-spin"></i>
+                    <p id="statloadtext">Please Wait...</p>
+                </div>
                 <div id="container_box">
                     <table>
                         <thead>
@@ -452,9 +489,9 @@
         </div>
         <div id="log-container" class="hidden">
             <div id="log-box">
-                <button id="close-log-btn">Close</button>
                 <pre id="log-output"></pre>
             </div>
+            <button id="close-log-btn">x</button>
         </div>
     </main>
 
@@ -476,7 +513,7 @@
             const account = document.getElementsByClassName("account-name");
             try {
                 const token = localStorage.getItem("silk-token")
-                const response = await fetch("http://127.0.0.1:5000/validate/", {
+                const response = await fetch("http://127.0.0.1:5000/api/validate/", {
                     method: "POST",
                     headers: {
                         "Content-type": "application/json; charset=UTF-8"
@@ -514,10 +551,24 @@
         const logOutput = document.getElementById('log-output');
         const closeLogBtn = document.getElementById('close-log-btn');
         const deleteContainersBtn = document.getElementById('delete-containers-btn');
+        const statusload = document.getElementById('statusload');
+        const statloadtext = document.getElementById('statloadtext');
 
         let logInterval;
 
+        function toggleLoadanim (visible, message) {
+            if (visible) {
+                statusload.style.display = "block";
+                if (message !== null) {
+                    statloadtext.innerText = message;
+                }
+            } else {
+                statusload.style.display = "none";
+            }
+        }
+
         async function fetchContainers() {
+            toggleLoadanim(true, "Fetching Containers...");
             const response = await fetch('http://127.0.0.1:5000/api/containers');
             const containers = await response.json();
             containerList.innerHTML = '';
@@ -546,6 +597,7 @@
                 `;
                 containerList.appendChild(row);
             });
+            toggleLoadanim(false, null);
         }
 
         async function fetchLogs(containerId) {
@@ -555,30 +607,56 @@
         }
 
         createContainerBtn.addEventListener('click', async () => {
-            await fetch('http://127.0.0.1:5000/api/containers/create', { method: 'POST' });
+            const token = localStorage.getItem("silk-token");
+            toggleLoadanim(true, "Creating Container...");
+            await fetch('http://127.0.0.1:5000/api/containers/create', {
+                    method: "POST",
+                    headers: {
+                        "Content-type": "application/json; charset=UTF-8"
+                    },
+                    body: JSON.stringify({
+                        token: token
+                    })
+                });
             fetchContainers();
         });
 
         deleteContainersBtn.addEventListener('click', async () => {
             if (confirm("Do you really want to delete EVERY container?")) {
-                const response = await fetch('http://127.0.0.1:5000/api/containers/delete_all', { method: 'DELETE' });;
-                const parsed = await response.json();
-
-                if (parsed.status == "Success") {
-                    console.log("Success!");
-                }
+                const token = localStorage.getItem("silk-token");
+                toggleLoadanim(true, "Deleting Containers...");
+                const response = await fetch('http://127.0.0.1:5000/api/containers/delete_all', {
+                    method: "DELETE",
+                    headers: {
+                        "Content-type": "application/json; charset=UTF-8"
+                    },
+                    body: JSON.stringify({
+                        token: token
+                    })
+                });;
+                fetchContainers();
             }
         });
 
         containerList.addEventListener('click', async (e) => {
             if (e.target.classList.contains('delete-btn')) {
                 const containerId = e.target.dataset.id;
+                toggleLoadanim(true, "Deleting Container...");
                 await fetch(`http://127.0.0.1:5000/api/containers/${containerId}`, { method: 'DELETE' });
                 fetchContainers();
             }
             if (e.target.classList.contains('build-btn')) {
+                const token = localStorage.getItem("silk-token");
                 const containerId = e.target.dataset.id;
-                await fetch(`http://127.0.0.1:5000/api/containers/${containerId}/build`, { method: 'POST' });
+                await fetch(`http://127.0.0.1:5000/api/containers/${containerId}/build`, {
+                    method: "POST",
+                    headers: {
+                        "Content-type": "application/json; charset=UTF-8"
+                    },
+                    body: JSON.stringify({
+                        token: token
+                    })
+                });
                 fetchContainers();
             }
             if (e.target.classList.contains('logs-btn')) {
