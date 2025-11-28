@@ -398,7 +398,7 @@
             const account = document.getElementsByClassName("account-name");
             try {
                 const token = localStorage.getItem("silk-token")
-                const response = await fetch("http://127.0.0.1:5000/validate/", {
+                const response = await fetch("http://127.0.0.1:5000/api/validate/", {
                     method: "POST",
                     headers: {
                         "Content-type": "application/json; charset=UTF-8"
@@ -425,7 +425,7 @@
         async function register () {
             const user = document.getElementById("username").value;
             const password = document.getElementById("password").value;
-            const response = await fetch("http://127.0.0.1:5000/register/", {
+            const response = await fetch("http://127.0.0.1:5000/api/register/", {
                 method: "POST",
                 headers: {
                     "Content-type": "application/json; charset=UTF-8"

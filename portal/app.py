@@ -59,6 +59,28 @@ def user_exists(user):
     cur.close()
     return False
 
+def validate_token(token):
+    if not token:
+        return {
+            "status":"No Token Requested"
+        }, 400
+
+    db = sqlite3.connect("accounts.db")
+    cur = db.cursor()
+    res = cur.execute("SELECT * FROM sessions WHERE token=?", (token,))
+    final = res.fetchone()
+    db.close()
+
+    if final == None:
+        return {
+            "status":"Invalid Token"
+        }, 403
+
+    if not (final[1] == token and time.time() < final[2]):
+        return {
+            "status":"Expired Token"
+        }, 403
+
 def in_auth(user):
     accounts = sqlite3.connect("accounts.db")
     cur = accounts.cursor()
@@ -95,11 +117,7 @@ acc_db.close()
 app = Flask(__name__)
 CORS(app)
 
-@app.route("/", methods=['POST', 'GET'])
-def default():
-    return "Welcome to the Silk Dev Portal Root"
-
-@app.route("/validate/", methods=['POST'])
+@app.route("/api/validate/", methods=['POST'])
 def validate():
     data = request.json
     token = data["token"]
@@ -134,7 +152,7 @@ def validate():
             "status":"Expired Token"
         }, 403
 
-@app.route("/accounts/", methods=['GET'])
+@app.route("/api/accounts/", methods=['GET'])
 def accounts():
     account_id = request.args.get("id")
     if account_id != None:
@@ -165,7 +183,7 @@ def accounts():
             "account":get_accounts()
         }
     
-@app.route("/accounts/len", methods=['GET'])
+@app.route("/api/accounts/len", methods=['GET'])
 def accounts_len():
     db = sqlite3.connect("accounts.db")
     cur = db.cursor()
@@ -177,7 +195,7 @@ def accounts_len():
         "accountslen":accountslen[0]
     }
         
-@app.route("/login/", methods=['POST'])
+@app.route("/api/login/", methods=['POST'])
 def login():
     delete_expired()
     data = request.json
@@ -225,7 +243,7 @@ def login():
             "status":"No such account"
         }, 404
 
-@app.route("/register/", methods=['POST'])
+@app.route("/api/register/", methods=['POST'])
 def register():
     delete_expired()
     data = request.json
@@ -250,6 +268,7 @@ def register():
 
         current_time = time.time()
         expires = current_time + 600
+
         # Save authentication code and info into database
         db = sqlite3.connect("accounts.db")
         cur = db.cursor()
@@ -268,7 +287,7 @@ def register():
             "status":"Login credentials are missing"
         }, 400
     
-@app.route("/register/add", methods=['POST'])
+@app.route("/api/register/add", methods=['POST'])
 def create_account():
     delete_expired()
     data = request.json
@@ -284,6 +303,7 @@ def create_account():
             return {
                 "status":"Admin Password incorrect"
             }, 403
+        
         # Get password hash from the auth table
         db = sqlite3.connect("accounts.db")
         cur = db.cursor()
@@ -317,6 +337,12 @@ def list_containers():
 
 @app.route("/api/containers/create", methods=['POST'])
 def create_container():
+    # Validate token
+    data = request.json
+    token = data["token"]
+    validate_token(token)
+    
+    # Create Container
     container_name = f"silkos-build-container-{random.randint(1000, 9999)}"
     try:
         container = docker_client.containers.run("ubuntu:24.04", detach=True, name=container_name, tty=True)
@@ -347,6 +373,12 @@ def delete_container(container_id):
 
 @app.route("/api/containers/delete_all", methods=['DELETE'])
 def delete_all_containers():
+    # Validate token
+    data = request.json
+    token = data["token"]
+    validate_token(token)
+    
+    # Delete all containers
     try:
         db = sqlite3.connect("accounts.db")
         cur = db.cursor()
@@ -367,6 +399,11 @@ def delete_all_containers():
 
 @app.route("/api/containers/<container_id>/build", methods=['POST'])
 def build_container(container_id):
+    # Validate token
+    data = request.json
+    token = data["token"]
+    validate_token(token)
+    
     try:
         container = docker_client.containers.get(container_id)
         log_path = os.path.join(app.root_path, "tmp", f"{container_id}.log")
@@ -452,8 +489,24 @@ def container_logs(container_id):
     else:
         return jsonify({"logs": ""})
 
-@app.route("/manage")
-def manage():
+@app.route("/")
+def main_page():
+    return render_template("index.html")
+
+@app.route("/index.html")
+def main_page2():
+    return render_template("index.html")
+
+@app.route("/login.html")
+def login_page():
+    return render_template("login.html")
+
+@app.route("/register.html")
+def register_page():
+    return render_template("register.html")
+
+@app.route("/manage.html")
+def manage_page():
     return render_template("manage.html")
 
 @app.errorhandler(404)
