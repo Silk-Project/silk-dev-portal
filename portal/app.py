@@ -325,8 +325,14 @@ def create_account():
             "status":"Credentials are missing"
         }, 400
 
-@app.route("/api/containers", methods=['GET'])
+@app.route("/api/containers/", methods=['POST'])
 def list_containers():
+    # Validate token
+    data = request.json
+    token = data["token"]
+    validate_token(token)
+
+    # Return Containers
     db = sqlite3.connect("accounts.db")
     cur = db.cursor()
     res = cur.execute("SELECT * FROM containers")
@@ -357,6 +363,12 @@ def create_container():
 
 @app.route("/api/containers/<container_id>", methods=['DELETE'])
 def delete_container(container_id):
+    # Validate token
+    data = request.json
+    token = data["token"]
+    validate_token(token)
+
+    # Delete Container
     try:
         container = docker_client.containers.get(container_id)
         container.remove(force=True)
@@ -404,6 +416,7 @@ def build_container(container_id):
     token = data["token"]
     validate_token(token)
     
+    # Build using container
     try:
         container = docker_client.containers.get(container_id)
         log_path = os.path.join(app.root_path, "tmp", f"{container_id}.log")

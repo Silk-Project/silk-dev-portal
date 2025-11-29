@@ -468,6 +468,7 @@
                     <div id="toolbox">
                         <button id="create-container-btn" class="tool-btn"><i class="fa fa-plus"></i>New Container</button>
                         <button id="delete-containers-btn" class="tool-btn"><i class="fa fa-trash"></i>Delete Containers</button>
+                        <button id="refresh-containers-btn" class="tool-btn"><i class="fa fa-refresh"></i>Refresh</button>
                     </div>
                     <div id="statusload">
                         <i id="throbber" class="fa-solid fa-cog fa-spin"></i>
@@ -534,6 +535,7 @@
                 }
             } catch (err) {
                 console.error(`Failed to fetch from server. ${err}`)
+                window.location.href = "login.html";
             }
         }
 
@@ -550,12 +552,14 @@
     <script>
         const containerList = document.getElementById('container-list');
         const createContainerBtn = document.getElementById('create-container-btn');
+        const deleteContainersBtn = document.getElementById('delete-containers-btn');
+        const refreshContainersBtn = document.getElementById('refresh-containers-btn');
         const logContainer = document.getElementById('log-container');
         const logOutput = document.getElementById('log-output');
         const closeLogBtn = document.getElementById('close-log-btn');
-        const deleteContainersBtn = document.getElementById('delete-containers-btn');
         const statusload = document.getElementById('statusload');
         const statloadtext = document.getElementById('statloadtext');
+        const token = localStorage.getItem("silk-token");
 
         let logInterval;
 
@@ -571,36 +575,49 @@
         }
 
         async function fetchContainers() {
-            toggleLoadanim(true, "Fetching Containers...");
-            const response = await fetch('http://127.0.0.1:5000/api/containers');
-            const containers = await response.json();
-            containerList.innerHTML = '';
-            containers.forEach(container => {
-                const row = document.createElement('tr');
-                const activity = container[3];
-                let status;
+            try {
+                toggleLoadanim(true, "Fetching Containers...");
+                const response = await fetch('http://127.0.0.1:5000/api/containers/', {
+                        method: "POST",
+                        headers: {
+                            "Content-type": "application/json; charset=UTF-8"
+                        },
+                        body: JSON.stringify({
+                            token: token
+                        })
+                    });
+                const containers = await response.json();
+                console.log(containers);
+                containerList.innerHTML = '';
+                containers.forEach(container => {
+                    const row = document.createElement('tr');
+                    const activity = container[3];
+                    let status;
 
-                if (activity == "Active") {
-                    status = "stat_act";
-                } else if (activity == "Inactive") {
-                    status = "stat_inact";
-                } else if (activity == "Failed") {
-                    status = "stat_fail";
-                }
+                    if (activity == "Active") {
+                        status = "stat_act";
+                    } else if (activity == "Inactive") {
+                        status = "stat_inact";
+                    } else if (activity == "Failed") {
+                        status = "stat_fail";
+                    }
 
-                row.innerHTML = `
-                    <td>${container[1]}</td>
-                    <td>${container[4]}</td>
-                    <td class="${status}">${container[3]}</td>
-                    <td>
-                        <button class="btn-primary build-btn" data-id="${container[0]}">Build</button>
-                        <button class="btn-secondary delete-btn" data-id="${container[0]}">Delete</button>
-                        <button class="btn-secondary logs-btn" data-id="${container[0]}">Logs</button>
-                    </td>
-                `;
-                containerList.appendChild(row);
-            });
-            toggleLoadanim(false, null);
+                    row.innerHTML = `
+                        <td>${container[1]}</td>
+                        <td>${container[4]}</td>
+                        <td class="${status}">${container[3]}</td>
+                        <td>
+                            <button class="btn-primary build-btn" data-id="${container[0]}">Build</button>
+                            <button class="btn-secondary delete-btn" data-id="${container[0]}">Delete</button>
+                            <button class="btn-secondary logs-btn" data-id="${container[0]}">Logs</button>
+                        </td>
+                    `;
+                    containerList.appendChild(row);
+                });
+                toggleLoadanim(false, null);
+            } catch (err) {
+                statloadtext.innerText = err;
+            }
         }
 
         async function fetchLogs(containerId) {
@@ -609,10 +626,14 @@
             logOutput.textContent = data.logs;
         }
 
+        refreshContainersBtn.addEventListener('click', async () => {
+            fetchContainers();
+        });
+
         createContainerBtn.addEventListener('click', async () => {
-            const token = localStorage.getItem("silk-token");
             toggleLoadanim(true, "Creating Container...");
-            await fetch('http://127.0.0.1:5000/api/containers/create', {
+            try {
+                await fetch('http://127.0.0.1:5000/api/containers/create', {
                     method: "POST",
                     headers: {
                         "Content-type": "application/json; charset=UTF-8"
@@ -621,23 +642,29 @@
                         token: token
                     })
                 });
-            fetchContainers();
+                fetchContainers();
+            } catch (err) {
+                statloadtext.innerText = err;
+            }
         });
 
         deleteContainersBtn.addEventListener('click', async () => {
             if (confirm("Do you really want to delete EVERY container?")) {
-                const token = localStorage.getItem("silk-token");
                 toggleLoadanim(true, "Deleting Containers...");
-                const response = await fetch('http://127.0.0.1:5000/api/containers/delete_all', {
-                    method: "DELETE",
-                    headers: {
-                        "Content-type": "application/json; charset=UTF-8"
-                    },
-                    body: JSON.stringify({
-                        token: token
-                    })
-                });;
-                fetchContainers();
+                try {
+                    await fetch('http://127.0.0.1:5000/api/containers/delete_all', {
+                        method: "DELETE",
+                        headers: {
+                            "Content-type": "application/json; charset=UTF-8"
+                        },
+                        body: JSON.stringify({
+                            token: token
+                        })
+                    });
+                    fetchContainers();
+                } catch (err) {
+                    statloadtext.innerText = err;
+                }
             }
         });
 
@@ -645,22 +672,37 @@
             if (e.target.classList.contains('delete-btn')) {
                 const containerId = e.target.dataset.id;
                 toggleLoadanim(true, "Deleting Container...");
-                await fetch(`http://127.0.0.1:5000/api/containers/${containerId}`, { method: 'DELETE' });
-                fetchContainers();
+                try {
+                    await fetch(`http://127.0.0.1:5000/api/containers/${containerId}`, {
+                        method: "DELETE",
+                        headers: {
+                            "Content-type": "application/json; charset=UTF-8"
+                        },
+                        body: JSON.stringify({
+                            token: token
+                        })
+                    });
+                    fetchContainers();
+                } catch (err) {
+                    statloadtext.innerText = err;
+                }
             }
             if (e.target.classList.contains('build-btn')) {
-                const token = localStorage.getItem("silk-token");
                 const containerId = e.target.dataset.id;
-                await fetch(`http://127.0.0.1:5000/api/containers/${containerId}/build`, {
-                    method: "POST",
-                    headers: {
-                        "Content-type": "application/json; charset=UTF-8"
-                    },
-                    body: JSON.stringify({
-                        token: token
-                    })
-                });
-                fetchContainers();
+                try {
+                    await fetch(`http://127.0.0.1:5000/api/containers/${containerId}/build`, {
+                        method: "POST",
+                        headers: {
+                            "Content-type": "application/json; charset=UTF-8"
+                        },
+                        body: JSON.stringify({
+                            token: token
+                        })
+                    });
+                    fetchContainers();
+                } catch (err) {
+                    statloadtext.innerText = err;
+                }
             }
             if (e.target.classList.contains('logs-btn')) {
                 const containerId = e.target.dataset.id;
