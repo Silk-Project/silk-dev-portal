@@ -1,8 +1,8 @@
 # 🌌 Silk Developer Portal
 The Silk Developer Portal WebUI source code for building SilkOS. Self-hostable, simple and secure.
 
-## ⚠️ WARNING: THIS IS IN AN ALPHA PHASE ⚠️
-Expect any errors from the scripts.
+## ⚠️ WARNING: THIS IS IN AN EARLY DEVELOPMENT PHASE ⚠️
+Expect errors from the scripts.
 
 ## ⚡ Features
 - Simple account system (based on Silk-Forum)
