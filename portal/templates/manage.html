@@ -89,13 +89,20 @@
         }
 
         /* Portal */
+        #site-content {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            width: 100%;
+        }
+
         main {
             display: flex;
             justify-content: center;
+            flex-grow: 1;
             align-items: center;
             width: 100%;
             padding: 4rem 0 4rem 0;
-            min-height: 600px;
             background: linear-gradient(to bottom, #5c0086, #180124);
         }
 
@@ -138,6 +145,7 @@
 
         table {
             border: solid 1px#a5a5a550;
+            align-self: center;
             box-shadow: 2px 2px 10px #ffffff13;
             border-radius: 3px;
             min-width: 100%;
@@ -300,16 +308,9 @@
             }
         }
 
-        @media (max-width: 1300px) {
-            #container_forum {
+        @media (max-width: 600px) {
+            #toolbox {
                 flex-direction: column;
-                align-items: stretch;
-                gap: 20px;
-            }
-            #server_infos {
-                justify-content: center;
-                width: 100%;
-                gap: 20px;
             }
         }
 
@@ -459,46 +460,48 @@
         </div>
     </header>
 
-    <main>
-        <div id="mainbox">
-            <div id="titlebox">
-                <h1>Manage Builds</h1>
-                <div id="toolbox">
-                    <button id="create-container-btn" class="tool-btn"><i class="fa fa-plus"></i>New Container</button>
-                    <button id="delete-containers-btn" class="tool-btn"><i class="fa fa-trash"></i>Delete Containers</button>
-                </div>
-                <div id="statusload">
-                    <i id="throbber" class="fa-solid fa-cog fa-spin"></i>
-                    <p id="statloadtext">Please Wait...</p>
-                </div>
-                <div id="container_box">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Container</th>
-                                <th>Uptime</th>
-                                <th>Build Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="container-list">
-                        </tbody>
-                    </table>
+    <div id="site-content">
+        <main>
+            <div id="mainbox">
+                <div id="titlebox">
+                    <h1>Manage Builds</h1>
+                    <div id="toolbox">
+                        <button id="create-container-btn" class="tool-btn"><i class="fa fa-plus"></i>New Container</button>
+                        <button id="delete-containers-btn" class="tool-btn"><i class="fa fa-trash"></i>Delete Containers</button>
+                    </div>
+                    <div id="statusload">
+                        <i id="throbber" class="fa-solid fa-cog fa-spin"></i>
+                        <p id="statloadtext">Please Wait...</p>
+                    </div>
+                    <div id="container_box">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Container</th>
+                                    <th>Uptime</th>
+                                    <th>Build Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="container-list">
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div id="log-container" class="hidden">
-            <div id="log-box">
-                <pre id="log-output"></pre>
+            <div id="log-container" class="hidden">
+                <div id="log-box">
+                    <pre id="log-output"></pre>
+                </div>
+                <button id="close-log-btn">x</button>
             </div>
-            <button id="close-log-btn">x</button>
-        </div>
-    </main>
+        </main>
 
-    <footer class="bg-footer-dark">
-        <p>&copy; 2025 The Silk Project.</p>
-    </footer>
-
+        <footer class="bg-footer-dark">
+            <p>&copy; 2025 The Silk Project.</p>
+        </footer>
+    </div>
+    
     <script>
         // JavaScript for mobile menu toggle
         const mobileMenuButton = document.getElementById('mobile-menu-button');
