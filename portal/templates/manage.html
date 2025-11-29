@@ -689,6 +689,7 @@
             }
             if (e.target.classList.contains('build-btn')) {
                 const containerId = e.target.dataset.id;
+                toggleLoadanim(true, "Attempting to build...");
                 try {
                     await fetch(`http://127.0.0.1:5000/api/containers/${containerId}/build`, {
                         method: "POST",
