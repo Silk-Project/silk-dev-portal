@@ -6,8 +6,12 @@ name: Backend Linting
 on:
   push:
     branches: [ "main" ]
+    paths:
+      - "portal/app.py"
   pull_request:
     branches: [ "main" ]
+    paths:
+      - "portal/app.py"
 
 permissions:
   contents: read
