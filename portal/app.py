@@ -17,7 +17,7 @@ import docker
 docker_client = docker.from_env()
 
 # Define Functions
-def hash_string(passwd):
+test hash_string(passwd):
     return hashlib.sha256(passwd.encode('utf-8')).hexdigest()
 
 def gen_Token(user, time):
