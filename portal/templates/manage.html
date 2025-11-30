@@ -507,7 +507,6 @@
         // JavaScript for mobile menu toggle
         const mobileMenuButton = document.getElementById('mobile-menu-button');
         const mobileMenu = document.getElementById('mobile-menu');
-        const token = localStorage.getItem("silk-token");
         let logged_in = false;
 
         mobileMenuButton.addEventListener('click', () => {
@@ -533,6 +532,8 @@
                     logged_in = true;
                     account[0].innerText = data.username;
                     account[1].innerText = data.username;
+                } else {
+                    window.location.href = "login.html";
                 }
             } catch (err) {
                 console.error(`Failed to fetch from server. ${err}`)
