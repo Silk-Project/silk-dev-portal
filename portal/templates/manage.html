@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Silk Developer Portal</title>
+    <title>Silk Developer Portal - Manage</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="icon" type="image/x-icon" href="silkoslogo.png">
     <style>
@@ -617,11 +617,11 @@
                     account[0].innerText = data.username;
                     account[1].innerText = data.username;
                 } else {
-                    //window.location.href = "login.html";
+                    window.location.href = "login.html";
                 }
             } catch (err) {
                 console.error(`Failed to fetch from server. ${err}`)
-                //window.location.href = "login.html";
+                window.location.href = "login.html";
             }
         }
 
