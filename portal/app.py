@@ -435,11 +435,11 @@ def build_container(container_id):
                     build_cmd = [
                         "/bin/sh", "-c",
                         "apt-get update && "
-                        "apt-get install -y sudo git build-essential cmake curl libmpfr-dev libmpc-dev libgmp-dev e2fsprogs ninja-build qemu-system-gui qemu-system-x86 qemu-utils ccache rsync unzip texinfo libssl-dev zlib1g-dev && "
+                        "apt-get install -y sudo git build-essential genext2fs cmake curl libmpfr-dev libmpc-dev libgmp-dev e2fsprogs ninja-build qemu-system-gui qemu-system-x86 qemu-utils ccache rsync unzip texinfo libssl-dev zlib1g-dev && "
                         "id -u builder >/dev/null 2>&1 || useradd -m -s /bin/bash builder && "
                         "id -u builder >/dev/null 2>&1 && usermod -aG sudo builder && "
                         "(grep -qxF 'builder ALL=(ALL) NOPASSWD: ALL' /etc/sudoers || echo 'builder ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers) && "
-                        "su -l builder -c 'rm -rf /home/builder/SilkOS && git clone --depth 1 https://github.com/CommandCrafterx/SilkOS.git /home/builder/SilkOS && cd /home/builder/SilkOS && ./Meta/silkos.sh build'"
+                        "su -l builder -c 'rm -rf /home/builder/SilkOS && git clone --depth 1 https://github.com/CommandCrafterx/SilkOS.git /home/builder/SilkOS && cd /home/builder/SilkOS && ./Meta/silkos.sh test'"
                     ]
 
                     exec_create_result = docker_client.api.exec_create(
