@@ -425,6 +425,7 @@ def build_container(container_id):
 
         def run_build():
             with open(log_path, "w") as log_file:
+                exit_code = -1
                 try:
                     db = sqlite3.connect("accounts.db")
                     cur = db.cursor()
@@ -438,8 +439,14 @@ def build_container(container_id):
                         "apt-get install -y sudo git build-essential genext2fs cmake curl libmpfr-dev libmpc-dev libgmp-dev e2fsprogs ninja-build qemu-system-gui qemu-system-x86 qemu-utils ccache rsync unzip texinfo libssl-dev zlib1g-dev && "
                         "id -u builder >/dev/null 2>&1 || useradd -m -s /bin/bash builder && "
                         "id -u builder >/dev/null 2>&1 && usermod -aG sudo builder && "
-                        "(grep -qxF 'builder ALL=(ALL) NOPASSWD: ALL' /etc/sudoers || echo 'builder ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers) && "
-                        "su -l builder -c 'rm -rf /home/builder/SilkOS && git clone --depth 1 https://github.com/CommandCrafterx/SilkOS.git /home/builder/SilkOS && cd /home/builder/SilkOS && ./Meta/silkos.sh test'"
+                        "(grep -qxF 'builder ALL=(ALL) NOPASSWD: ALL' /etc/sudoers || echo 'builder ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers) && " + \
+                        "su -l builder -c '" +
+                        "if [ -d /home/builder/SilkOS ]; then " +
+                        "  cd /home/builder/SilkOS && git pull; " +
+                        "else " +
+                        "  git clone --depth 1 https://github.com/CommandCrafterx/SilkOS.git /home/builder/SilkOS; " +
+                        "fi && " +
+                        "cd /home/builder/SilkOS && ./Meta/silkos.sh test'"
                     ]
 
                     exec_create_result = docker_client.api.exec_create(
@@ -450,7 +457,6 @@ def build_container(container_id):
                     exec_id = exec_create_result['Id']
 
                     output_stream = docker_client.api.exec_start(exec_id, stream=True, demux=True)
-
                     for stdout_chunk, stderr_chunk in output_stream:
                         if stdout_chunk:
                             log_file.write(stdout_chunk.decode('utf-8'))
@@ -460,20 +466,13 @@ def build_container(container_id):
                     exec_info = docker_client.api.exec_inspect(exec_id)
                     exit_code = exec_info['ExitCode']
 
-                    db = sqlite3.connect("accounts.db")
-                    cur = db.cursor()
-                    cur.execute(
-                        "UPDATE containers SET build_status=? WHERE id=?",
-                        ("Success" if exit_code == 0 else "Failed", container_id)
-                    )
-                    db.commit()
-                    db.close()
-
                 except Exception as e:
                     log_file.write(str(e))
+                finally:
                     db = sqlite3.connect("accounts.db")
                     cur = db.cursor()
-                    cur.execute("UPDATE containers SET build_status='Failed' WHERE id=?", (container_id,))
+                    final_status = "Success" if exit_code == 0 else "Failed"
+                    cur.execute("UPDATE containers SET build_status=? WHERE id=?", (final_status, container_id))
                     db.commit()
                     db.close()
 
