@@ -514,6 +514,10 @@ def register_page():
 def manage_page():
     return render_template("manage.html")
 
+@app.route("/about.html")
+def about_page():
+    return render_template("about.html")
+
 @app.errorhandler(404)
 def page_not_found(error):
     return {
