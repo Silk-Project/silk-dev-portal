@@ -2,19 +2,28 @@ from flask import Flask, request, redirect, abort, url_for, render_template, jso
 from flask_cors import CORS
 import sqlite3
 import hashlib
-import smtplib
-import ssl
 import getpass
 from email.message import EmailMessage
 import time
 import os
-import re
+import platform
+# import smtplib
+# import ssl
+# import re
+
 import random
 import threading
 import docker
 
 # Initialize Docker client
 docker_client = docker.from_env()
+
+# Define Constants
+admin_password = None
+version = ("0.0.0", "Alpha") # (Version Number, Version Name)
+uptime_start = time.time()
+py_version = platform.python_version()
+docker_version = docker_client.version()['Version']
 
 # Define Functions
 def hash_string(passwd):
@@ -116,6 +125,24 @@ acc_db.close()
 # Initialize Flask App
 app = Flask(__name__)
 CORS(app)
+
+@app.route("/api/version/", methods=['GET'])
+def get_version():
+    # Return Version Info and format time
+    current_time = time.time()
+    uptime_seconds = int(current_time - uptime_start)
+    uptime_string = f"{uptime_seconds // 3600}h {(uptime_seconds % 3600) // 60}m {uptime_seconds % 60}s"
+    return {
+        "status":"Success",
+        "version_info":{
+            "version_number":version[0],
+            "version_name":version[1],
+            "python_version":py_version,
+            "docker_version":docker_version,
+            "uptime":uptime_string
+        }
+    }
+
 
 @app.route("/api/validate/", methods=['POST'])
 def validate():

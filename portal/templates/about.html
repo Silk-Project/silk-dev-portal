@@ -95,11 +95,20 @@
             align-items: center;
             width: 100%;
             height: 82vh;
+            /*background-color: linear-gradient(to bottom, #5c0086, #180124);*/
+        }
+
+        #bg-img {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             background-image: url(../static/bg.png);
+            background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
-            background-color: #5c0086;
-            /*background-color: linear-gradient(to bottom, #5c0086, #180124);*/
+            z-index: -1;
         }
 
         #aboutbox {
@@ -113,8 +122,12 @@
             backdrop-filter: blur(4px);
         }
 
-        #aboutbox h1 {
+        #aboutbox h1, h2 {
             text-align: center;
+        }
+
+        pre {
+            font-family: Inter, Arial, sans-serif;
         }
 
         /* Desktop Navigation */
@@ -268,6 +281,7 @@
 </head>
 <body class="bg-primary-dark">
 
+    <div id="bg-img"></div>
     <header>
         <div class="container">
             <div class="header-inner">
@@ -322,9 +336,9 @@
   <main>
     <div id="aboutbox">
         <h1>About Silk Developer Portal</h1>
-        <p>WebUI Version: Alpha</p>
-        <!--To-Do: Request WebUI version from server-->
-        <!--<pre id="aboutinfo"></pre>-->
+        <p>Silk Developer Portal is a flask WebUI to build SilkOS. It features conatiner management, build status, a live view of the containers build logs, and an account system based on Silk Forum.</p>
+        <h2>Server Info</h2>
+        <pre id="aboutinfo"></pre>
     </div>
   </main>
 
@@ -367,6 +381,21 @@
             }
         }
 
+        async function fetchVersion () {
+            try {
+                const response = await fetch("http://127.0.0.1:5000/api/version/");
+                const data = await response.json();
+                version_info = data.version_info;
+
+                console.log(version_info);
+
+                const aboutinfo = document.getElementById("aboutinfo");
+                aboutinfo.innerHTML = `<p>Silk Developer Portal Version: ${version_info.version_number} (${version_info.version_name})<br>Server Uptime: ${version_info.uptime} seconds<br>Python Version: ${version_info.python_version}<br>Docker Version: ${version_info.docker_version}</p>`;
+            } catch (err) {
+                console.error(`Failed to fetch version from server. ${err}`)
+            }
+        }
+
         function login () {
             if (!logged_in) {
                 window.location.href = "login.html";
@@ -392,6 +421,7 @@
         }
 
         validate();
+        fetchVersion();
     </script>
 </body>
 </html>
