@@ -1,4 +1,4 @@
-.venv
+Why Wh.venv
 portal/__pycache__/*.pyc
 portal/accounts.db
 portal/tmp

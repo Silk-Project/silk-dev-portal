@@ -592,13 +592,13 @@ def start_ide_api():
         kill_cmd = "pkill -f code-server"
         container.exec_run(kill_cmd)
         
-        # Start code-server (User creation + Sudo setup + Execution in one go)
+        # Start code-server
         start_cmd = (
             "bash -c '"
             "id -u builder >/dev/null 2>&1 || useradd -m -s /bin/bash builder && "
             "usermod -aG sudo builder && "
             "(grep -qxF \"builder ALL=(ALL) NOPASSWD: ALL\" /etc/sudoers || echo \"builder ALL=(ALL) NOPASSWD: ALL\" >> /etc/sudoers) && "
-            f"su builder -c \"PASSWORD={password} code-server --bind-addr 0.0.0.0:8080 --auth password > /tmp/code-server.log 2>&1 &\"'"
+            f"su builder -c \"PASSWORD={password} code-server --bind-addr 0.0.0.0:8080 --auth password > /dev/null 2>&1 &\"'"
         )
         container.exec_run(start_cmd, detach=True)
         
