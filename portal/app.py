@@ -532,7 +532,6 @@ def start_ide_api():
     data = request.json
     token = data["token"]
     
-    # Check validation manually since validate_token just returns error tuples
     if not token:
         return {"status": "No Token Requested"}, 400
     
@@ -546,7 +545,7 @@ def start_ide_api():
         return {"status": "Expired Token"}, 403
         
     username = session[0]
-    container_name = f"silkos-ide-{username}"
+    container_name = f"cloud-ide-{username}"
     
     try:
         # Check if container exists
@@ -556,7 +555,7 @@ def start_ide_api():
                 container.start()
         except docker.errors.NotFound:
             # Create new IDE container
-            # Expose 8080 to a random host port
+            # Expose 8080 to a host port
             container = docker_client.containers.run(
                 "ubuntu:24.04", 
                 detach=True, 
@@ -571,7 +570,7 @@ def start_ide_api():
         
         if exit_code != 0:
             # Install prerequisites and code-server
-            install_cmd = "bash -c 'apt-get update && apt-get install -y curl ca-certificates && curl -fsSL https://code-server.dev/install.sh | sh'"
+            install_cmd = "bash -c 'apt-get update && apt-get install -y curl ca-certificates python3 python3-pip && curl -fsSL https://code-server.dev/install.sh | sh'"
             exit_code, output = container.exec_run(install_cmd)
             if exit_code != 0:
                 return jsonify({"status": "Error", "message": f"Failed to install code-server: {output.decode()}"}), 500
