@@ -9,6 +9,7 @@ Expect errors from the scripts.
 ## ⚡ Features
 - Simple account system (based on Silk-Forum)
 - Building SilkOS
+- Personal Web IDE with persistent per-user containers
 - Straightforward WebUI
 - Viewable container build status
 
@@ -20,9 +21,10 @@ Expect errors from the scripts.
 - `docker` (pip and through package manager)
 
 ### Running the app
-To run the app, type in the following command:
-```
-flask run
+To run the app and make it accessible on your network, run the following command:
+```bash
+cd portal
+flask run --host=0.0.0.0
 ```
 
 ## 🗺️ API Routes
@@ -34,10 +36,13 @@ flask run
 - `/api/register/`: Adds a user to the authentication list
 - `/api/register/add/`: Registers a new user
 
-### Containers
+### Containers (Builds)
 - `/api/containers`: Returns every containers' info
 - `/api/containers/create`: Creates a new container
 - `/api/containers/<container_id>`: Used to delete a container
 - `/api/containers/delete_all`: Clean up everything by deleting every container
 - `/api/containers/<container_id>/build`: Build SilkOS with a specified container
 - `/api/containers/<container_id>/logs`: Returns logs of a specified container
+
+### IDE
+- `/api/ide/start`: Launches a dedicated IDE container for the user and returns the URL and access password.

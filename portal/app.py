@@ -609,7 +609,7 @@ def start_ide_api():
         ports = container.attrs['NetworkSettings']['Ports']
         if ports and '8080/tcp' in ports and ports['8080/tcp']:
             host_port = ports['8080/tcp'][0]['HostPort']
-            ide_url = f"http://127.0.0.1:{host_port}"
+            ide_url = f"http://{request.host.split(':')[0]}:{host_port}"
             return jsonify({
                 "status": "Success", 
                 "url": ide_url, 
@@ -652,4 +652,4 @@ def page_not_found(error):
     }, 404
 
 if __name__ == '__main__':
-    app.run(port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)
