@@ -7,10 +7,6 @@ from email.message import EmailMessage
 import time
 import os
 import platform
-# import smtplib
-# import ssl
-# import re
-
 import random
 import threading
 import docker
@@ -25,14 +21,13 @@ version = ("0.0.0", "Alpha") # (Version Number, Version Name)
 uptime_start = time.time()
 py_version = platform.python_version()
 docker_version = docker_client.version()['Version']
-random_constant = random.randint(111111, 999999)
 
 # Define Functions
 def hash_string(passwd):
     return hashlib.sha256(passwd.encode('utf-8')).hexdigest()
 
-def gen_Token(user):
-    return hash_string(f"{hash_string(user)}{str(random_constant)}")
+def gen_Token(user, randomval):
+    return hash_string(f"{hash_string(user)}{str(randomval)}")
 
 def delete_expired():
     accounts = sqlite3.connect("accounts.db")
@@ -148,6 +143,7 @@ def get_version():
 
 @app.route("/api/validate/", methods=['POST'])
 def validate():
+    delete_expired()
     data = request.json
     token = data["token"]
 
@@ -183,6 +179,7 @@ def validate():
 
 @app.route("/api/accounts/", methods=['GET'])
 def accounts():
+    delete_expired()
     account_id = request.args.get("id")
     if account_id != None:
         try:
@@ -214,6 +211,7 @@ def accounts():
     
 @app.route("/api/accounts/len", methods=['GET'])
 def accounts_len():
+    delete_expired()
     db = sqlite3.connect("accounts.db")
     cur = db.cursor()
     res = cur.execute("SELECT COUNT(*) FROM accounts")
@@ -247,15 +245,18 @@ def login():
             res = cur.execute("SELECT * FROM sessions WHERE user=?", (username,))
             final = res.fetchone()
 
-            current_time = time.time()
-            expires = current_time + 86400
-            token = gen_Token(username)
-
             if final == None or time.time() > final[2]:
+                # Generate token if not already exists or expired
+                current_time = time.time()
+                expires = current_time + 86400
+                token = gen_Token(username, current_time)
+
                 cur.execute("DELETE FROM sessions WHERE user=?", (username,))
                 cur.execute("INSERT INTO sessions VALUES (?,?,?)", (username, token, expires))
                 db.commit()
                 print(f"Generated token for {username}")
+            else:
+                token = final[1]
 
             cur.close()
             print(f"{username} logged in.")
