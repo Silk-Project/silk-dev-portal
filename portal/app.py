@@ -14,6 +14,7 @@ import platform
 import random
 import threading
 import docker
+import string
 
 # Initialize Docker client
 docker_client = docker.from_env()
@@ -521,6 +522,105 @@ def container_logs(container_id):
     else:
         return jsonify({"logs": ""})
 
+@app.route("/ide.html")
+def ide_page():
+    return render_template("ide.html")
+
+@app.route("/api/ide/start", methods=['POST'])
+def start_ide_api():
+    # Validate token
+    data = request.json
+    token = data["token"]
+    
+    if not token:
+        return {"status": "No Token Requested"}, 400
+    
+    db = sqlite3.connect("accounts.db")
+    cur = db.cursor()
+    res = cur.execute("SELECT * FROM sessions WHERE token=?", (token,))
+    session = res.fetchone()
+    db.close()
+
+    if not session or session[1] != token or time.time() > session[2]:
+        return {"status": "Expired Token"}, 403
+        
+    username = session[0]
+    container_name = f"cloud-ide-{username}"
+    
+    try:
+        # Check if container exists
+        try:
+            container = docker_client.containers.get(container_name)
+            if container.status != 'running':
+                container.start()
+        except docker.errors.NotFound:
+            # Create new IDE container
+            # Expose 8080 to a host port
+            container = docker_client.containers.run(
+                "ubuntu:24.04", 
+                detach=True, 
+                name=container_name, 
+                tty=True,
+                ports={'8080/tcp': None} # Docker will assign a random port
+            )
+            
+        # Ensure code-server is installed
+        check_cmd = "which code-server"
+        exit_code, _ = container.exec_run(check_cmd)
+        
+        if exit_code != 0:
+            # Install prerequisites and code-server
+            install_cmd = "bash -c 'apt-get update && apt-get install -y curl ca-certificates python3 python3-pip && curl -fsSL https://code-server.dev/install.sh | sh'"
+            exit_code, output = container.exec_run(install_cmd)
+            if exit_code != 0:
+                return jsonify({"status": "Error", "message": f"Failed to install code-server: {output.decode()}"}), 500
+
+        # Ensure sudo is installed
+        check_sudo = "which sudo"
+        exit_code, _ = container.exec_run(check_sudo)
+        
+        if exit_code != 0:
+            install_sudo = "bash -c 'apt-get update && apt-get install -y sudo'"
+            exit_code, output = container.exec_run(install_sudo)
+            if exit_code != 0:
+                return jsonify({"status": "Error", "message": f"Failed to install sudo: {output.decode()}"}), 500
+
+        # Generate password
+        password = ''.join(random.choices(string.ascii_letters + string.digits, k=16))
+        
+        # Restart/Start code-server with new password
+        kill_cmd = "pkill -f code-server"
+        container.exec_run(kill_cmd)
+        
+        # Start code-server
+        start_cmd = (
+            "bash -c '"
+            "id -u builder >/dev/null 2>&1 || useradd -m -s /bin/bash builder && "
+            "usermod -aG sudo builder && "
+            "(grep -qxF \"builder ALL=(ALL) NOPASSWD: ALL\" /etc/sudoers || echo \"builder ALL=(ALL) NOPASSWD: ALL\" >> /etc/sudoers) && "
+            f"su builder -c \"PASSWORD={password} code-server --bind-addr 0.0.0.0:8080 --auth password > /dev/null 2>&1 &\"'"
+        )
+        container.exec_run(start_cmd, detach=True)
+        
+        time.sleep(3) # Wait for startup
+        
+        # Get host port
+        container.reload()
+        ports = container.attrs['NetworkSettings']['Ports']
+        if ports and '8080/tcp' in ports and ports['8080/tcp']:
+            host_port = ports['8080/tcp'][0]['HostPort']
+            ide_url = f"http://{request.host.split(':')[0]}:{host_port}"
+            return jsonify({
+                "status": "Success", 
+                "url": ide_url, 
+                "password": password
+            })
+        else:
+            return jsonify({"status": "Error", "message": "Failed to resolve exposed port"}), 500
+
+    except Exception as e:
+        return jsonify({"status": "Error", "message": str(e)}), 500
+
 @app.route("/")
 def main_page():
     return render_template("index.html")
@@ -552,4 +652,4 @@ def page_not_found(error):
     }, 404
 
 if __name__ == '__main__':
-    app.run(port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)
