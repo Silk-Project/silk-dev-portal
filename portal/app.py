@@ -25,13 +25,14 @@ version = ("0.0.0", "Alpha") # (Version Number, Version Name)
 uptime_start = time.time()
 py_version = platform.python_version()
 docker_version = docker_client.version()['Version']
+random_constant = random.randint(111111, 999999)
 
 # Define Functions
 def hash_string(passwd):
     return hashlib.sha256(passwd.encode('utf-8')).hexdigest()
 
-def gen_Token(user, time):
-    return hash_string(f"{hash_string(user)}{str(int(time))}")
+def gen_Token(user):
+    return hash_string(f"{hash_string(user)}{str(random_constant)}")
 
 def delete_expired():
     accounts = sqlite3.connect("accounts.db")
@@ -248,7 +249,7 @@ def login():
 
             current_time = time.time()
             expires = current_time + 86400
-            token = gen_Token(username, current_time)
+            token = gen_Token(username)
 
             if final == None or time.time() > final[2]:
                 cur.execute("DELETE FROM sessions WHERE user=?", (username,))
