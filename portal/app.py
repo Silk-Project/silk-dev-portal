@@ -570,7 +570,7 @@ def start_ide_api():
         
         if exit_code != 0:
             # Install prerequisites and code-server
-            install_cmd = "bash -c 'apt-get update && apt-get install -y curl ca-certificates python3 python3-pip && curl -fsSL https://code-server.dev/install.sh | sh'"
+            install_cmd = "bash -c 'apt-get update && apt-get install -y curl ca-certificates python3 python3-pip git && curl -fsSL https://code-server.dev/install.sh | sh'"
             exit_code, output = container.exec_run(install_cmd)
             if exit_code != 0:
                 return jsonify({"status": "Error", "message": f"Failed to install code-server: {output.decode()}"}), 500
