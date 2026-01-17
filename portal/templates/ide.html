@@ -7,15 +7,19 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='silkoslogo.png') }}">
     <style>
+        html {
+            height: 100%;
+        }
         body {
             font-family: 'Inter', Arial, sans-serif;
             background-color: #09040C;
             color: #F2E9F7;
             margin: 0;
             padding: 0;
-        }
-        html {
-            scroll-behavior: smooth;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
         }
         .bg-primary-dark { background-color: #09040C; }
         .bg-primary-medium { background-color: rgba(9, 4, 12, 0.9); }
@@ -37,18 +41,17 @@
 
         /* Header */
         header {
-            background-color: rgba(9, 4, 12, 0.7); /* bg-primary-medium/70 */
-            backdrop-filter: blur(12px); /* backdrop-blur-md */
-            position: sticky;
-            top: 0;
+            background-color: rgba(9, 4, 12, 0.7);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid #1f2937;
+            flex-shrink: 0;
             z-index: 50;
-            border-bottom: 1px solid #1f2937; /* border-gray-800 */
         }
         .header-inner {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            height: 4rem; /* h-16 */
+            height: 4rem;
         }
         .logo-link {
             display: flex;
@@ -88,71 +91,28 @@
             height: 35px;
         }
         
-        /* Header */
-        header {
-            background-color: rgba(9, 4, 12, 0.7); /* bg-primary-medium/70 */
-            backdrop-filter: blur(12px); /* backdrop-blur-md */
-            position: sticky;
-            top: 0;
-            z-index: 50;
-            border-bottom: 1px solid #1f2937; /* border-gray-800 */
-        }
-        .header-inner {
+        /* Portal */
+        #site-content {
             display: flex;
-            align-items: center;
-            justify-content: space-between;
-            height: 4rem; /* h-16 */
+            flex-direction: column;
+            flex-grow: 1;
+            min-height: 0;
+            width: 100%;
         }
-        .logo-link {
-            display: flex;
-            align-items: center;
-            text-decoration: none;
-            color: #F2E9F7;
-        }
-        .logo-link img {
-            height: 2rem; /* h-8 */
-            width: 2rem; /* w-8 */
-            margin-right: 0.75rem; /* space-x-3 */
-        }
-        .logo-link span {
-            font-size: 1.25rem; /* text-xl */
-            font-weight: 700; /* font-bold */
-        }
-        .account-btn {
-            display: flex;
-            flex-direction: row;
-            gap: 10px;
-            align-items: center;
-            color: #9ca3af;
-            user-select: none;
-            transition: 0.2s;
-            cursor: pointer;
-            border: none;
-            background-color: none;
-        }
-        .account-btn:hover {
-            color: #fff;
-        }
-        .account-btn p {
-            font-size: 14px;
-        }
-        .vl {
-            border-left: 1px solid rgba(77, 77, 77, 0.425);
-            height: 35px;
-        }
-        
+
         /* IDE Content */
         main {
             display: flex;
             justify-content: center;
             align-items: center;
             width: 100%;
-            height: 87vh;
+            flex-grow: 1;
+            min-height: 0;
             background-image: url(../static/bg.png);
             background-position: center;
             background-repeat: no-repeat;
             background-color: #5c0086;
-            /*background-color: linear-gradient(to bottom, #5c0086, #180124);*/
+            background-size: cover;
         }
 
         #ide-container {
@@ -546,6 +506,7 @@
         
         function openIDE() {
             launchScreen.style.display = 'none';
+            footer.style.display = 'none';
             ideContainer.style.display = 'block';
             document.getElementById('ide-frame').src = ide_url;
         }
