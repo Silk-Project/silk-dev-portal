@@ -133,8 +133,7 @@
         /* IDE Content */
         main {
             display: flex;
-            justify-content: center;
-            align-items: center;
+            flex-direction: column;
             width: 100%;
             flex-grow: 1;
             min-height: 0;
@@ -174,6 +173,7 @@
             box-shadow: 2px 2px 10px #ffffff13;
             gap: 10px;
             backdrop-filter: blur(4px);
+            margin: auto;
         }
 
         #titlebox {
@@ -532,6 +532,7 @@
                     ide_url = data.url;
                     
                     launchBtn.innerText = "Open IDE Now";
+                    launchBtn.style.display = 'inline-flex';
                     launchBtn.disabled = false;
                     launchBtn.onclick = openIDE;
                     
