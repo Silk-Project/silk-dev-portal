@@ -273,6 +273,35 @@ def login():
             "status":"No such account"
         }, 404
 
+@app.route("/api/logout/", methods=['POST'])
+def logout():
+    delete_expired()
+    data = request.json
+    token = data["token"]
+
+    if not token:
+        return {
+            "status":"No Token Requested"
+        }, 400
+
+    db = sqlite3.connect("accounts.db")
+    cur = db.cursor()
+    res = cur.execute("SELECT * FROM sessions WHERE token=?", (token,))
+    final = res.fetchone()
+
+    if final == None:
+        return {
+            "status":"Invalid Token"
+        }, 403
+
+    cur.execute("DELETE FROM sessions WHERE token=?", (token,))
+    db.commit()
+    cur.close()
+
+    return {
+        "status":"Success"
+    }
+
 @app.route("/api/register/", methods=['POST'])
 def register():
     delete_expired()

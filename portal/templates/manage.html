@@ -7,15 +7,19 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='silkoslogo.png') }}">
     <style>
+        html {
+            scroll-behavior: smooth;
+            height: 100%;
+        }
         body {
             font-family: 'Inter', Arial, sans-serif;
             background-color: #09040C;
             color: #F2E9F7;
             margin: 0;
             padding: 0;
-        }
-        html {
-            scroll-behavior: smooth;
+            min-height: 100%;
+            display: flex;
+            flex-direction: column;
         }
         .bg-primary-dark { background-color: #09040C; }
         .bg-primary-medium { background-color: rgba(9, 4, 12, 0.9); }
@@ -37,12 +41,11 @@
 
         /* Header */
         header {
-            background-color: rgba(9, 4, 12, 0.7); /* bg-primary-medium/70 */
-            backdrop-filter: blur(12px); /* backdrop-blur-md */
-            position: sticky;
-            top: 0;
+            background-color: rgba(9, 4, 12, 0.7);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid #1f2937;
+            flex-shrink: 0;
             z-index: 50;
-            border-bottom: 1px solid #1f2937; /* border-gray-800 */
         }
         .header-inner {
             display: flex;
@@ -83,6 +86,36 @@
         .account-btn p {
             font-size: 14px;
         }
+        #account-option-container {
+            position: absolute;
+            margin-top: 6px;
+            transform: translateX(-15px);
+            background-color: rgba(9, 4, 12, 0.7);
+            border: solid 1px #1f2937;
+            border-radius: 8px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        #account-option-container.hidden {
+            display: none;
+        }
+        #account-option-container button {
+            padding: 0.5rem 1rem; /* px-4 py-2 */
+            border-radius: 0.375rem; /* rounded-md */
+            color: #d1d5db; /* text-gray-300 */
+            font-size: 16px;
+            background-color: transparent;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            transition: color 0.2s, background-color 0.2s;
+        }
+        #account-option-container button:hover {
+            background-color: #374151;
+            color: #fff;
+        }
         .vl {
             border-left: 1px solid rgba(77, 77, 77, 0.425);
             height: 35px;
@@ -92,7 +125,8 @@
         #site-content {
             display: flex;
             flex-direction: column;
-            height: 100vh;
+            flex-grow: 1;
+            min-height: 0;
             width: 100%;
         }
 
@@ -422,16 +456,6 @@
         .btn-danger:hover {
             background-color: #a22020;
         }
-
-        /* Footer */
-        footer {
-            background-color: rgba(6, 2, 8, 0.9); /* bg-footer-dark */
-            text-align: center;
-            padding: 1.5rem 0; /* py-6 */
-        }
-        footer p {
-            color: #9ca3af; /* text-gray-400 */
-        }
         
         #log-container {
             position: fixed;
@@ -486,6 +510,17 @@
             white-space: pre-wrap;
             font-family: monospace;
         }
+
+        /* Footer */
+        footer {
+            background-color: rgba(6, 2, 8, 0.9); /* bg-footer-dark */
+            text-align: center;
+            padding: 1.5rem 0; /* py-6 */
+        }
+        footer p {
+            color: #9ca3af; /* text-gray-400 */
+            margin: 5px 0;
+        }
     </style>
 </head>
 <body class="bg-primary-dark">
@@ -506,9 +541,14 @@
                 </nav>
                 
                 <div class="desktop-socials">
-                    <div class="account-btn" onclick="account()">
-                        <i class="fa fa-user"></i>
-                        <p class="account-name">Account</p>
+                    <div class="account-container">
+                        <div class="account-btn" onclick="toggleAccountBtn()">
+                            <i class="fa fa-user"></i>
+                            <p class="account-name">Login</p>
+                        </div>
+                        <div id="account-option-container" class="hidden">
+                            <button onclick="logOut()">Sign Out</button>
+                        </div>
                     </div>
                     <div class="vl"></div>
                     <a href="feed.xml" class="social-link"><i class="fa fa-rss-square"></i></a>
@@ -517,9 +557,14 @@
                 </div>
 
                 <div class="mobile-menu-wrapper">
-                    <div class="account-btn" onclick="account()">
-                        <i class="fa fa-user"></i>
-                        <p class="account-name">Account</p>
+                    <div class="account-container">
+                        <div class="account-btn" onclick="toggleAccountBtn()">
+                            <i class="fa fa-user"></i>
+                            <p class="account-name">Login</p>
+                        </div>
+                        <div id="account-option-container" class="hidden">
+                            <button onclick="logOut()">Sign Out</button>
+                        </div>
                     </div>
                     <div class="vl"></div>
                     <button id="mobile-menu-button" class="mobile-menu-btn">
@@ -642,9 +687,22 @@
             }
         }
 
+        function logOut () {
+            localStorage.removeItem("silk-token");
+            window.location.href = "index.html";
+        }
+
+        function toggleAccountBtn () {
+            if (logged_in) {
+                container.classList.toggle("hidden");
+            } else {
+                window.location.href = "login.html";
+            }
+        }
+
         validate();
-    </script>
-    <script>
+
+        // JavaScript for managing containers
         const containerList = document.getElementById('container-list');
         const createContainerBtn = document.getElementById('create-container-btn');
         const deleteContainersBtn = document.getElementById('delete-containers-btn');
@@ -656,6 +714,7 @@
         const statusload = document.getElementById('statusload');
         const statloadtext = document.getElementById('statloadtext');
         const token = localStorage.getItem("silk-token");
+        const container = document.getElementById("account-option-container");
 
         // Dialog
         const diacontainer = document.getElementById('diacontainer');
