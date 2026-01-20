@@ -187,6 +187,11 @@
             justify-content: center;
         }
 
+        #screenwarning {
+            display: none;
+            color: rgb(255, 197, 197);
+        }
+
         /* Desktop Navigation */
         .desktop-nav {
             display: none;
@@ -282,16 +287,9 @@
             }
         }
 
-        @media (max-width: 1300px) {
-            #container_forum {
-                flex-direction: column;
-                align-items: stretch;
-                gap: 20px;
-            }
-            #server_infos {
-                justify-content: center;
-                width: 100%;
-                gap: 20px;
+        @media (min-width: 1440px) {
+            #screenwarning {
+                display: block;
             }
         }
 
@@ -407,6 +405,7 @@
                 <div id="titlebox">
                     <h1>Welcome to the Silk Developer Portal (SDP)</h1>
                     <p>The portal for building SilkOS and other Silk software.</p>
+                    <p id="screenwarning">Warning: You are using this website with a screen resolution of over 1080p. Some elements might not scale properly.</p>
                 </div>
                 <div id="accbuttoncontainer">
                     <button onclick="login()" class="accbutton btn-primary">Login</button>
