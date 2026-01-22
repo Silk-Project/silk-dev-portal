@@ -220,7 +220,7 @@
         .nav-link:hover {
             background-color: #374151; /* hover:bg-gray-700 */
             color: #fff; /* hover:text-white */
-        }
+        }      
 
         /* Desktop Socials */
         .desktop-socials {
@@ -237,6 +237,9 @@
         }
         .social-link i {
             font-size: 1.25rem; /* text-xl */
+        }
+        #admin-links {
+            display: none;
         }
 
         /* Mobile Menu */
@@ -356,6 +359,9 @@
                     <a href="index.html" class="nav-link">Main</a>
                     <a href="manage.html" class="nav-link">Manage</a>
                     <a href="ide.html" class="nav-link">IDE</a>
+                    <div id="admin-links">
+                        <a href="admin-panel.html" class="nav-link">Admin Panel</a>
+                    </div>
                     <a href="about.html" class="nav-link">About</a>
                 </nav>
                 
@@ -397,6 +403,9 @@
                 <a href="index.html" class="nav-link">Main</a>
                 <a href="manage.html" class="nav-link">Manage</a>
                 <a href="ide.html" class="nav-link">IDE</a>
+                <div id="admin-links">
+                    <a href="admin-panel.html" class="nav-link">Admin Panel</a>
+                </div>
                 <a href="about.html" class="nav-link">About</a>
                 <div class="mobile-socials">
                     <a href="feed.xml" class="social-link"><i class="fa fa-rss-square"></i></a>
@@ -409,7 +418,7 @@
 
     <main>
         <div id="login-container">
-            <div id="registerForm" action="http://127.0.0.1:5000/register/" method="post">
+            <div id="registerForm" action="/register/" method="post">
                 <h1>Welcome!</h1>
                 <div id="form">
                     <div class="input-group">
@@ -441,44 +450,41 @@
         const mobileMenu = document.getElementById('mobile-menu');
         const errtext = document.getElementById("sign-error");
         const container = document.getElementById("account-option-container");
+        const admin_links = document.getElementById("admin-links");
+        const accountNameElements = document.getElementsByClassName("account-name");
+        const token = localStorage.getItem("silk-token");
         let logged_in = false;
 
         mobileMenuButton.addEventListener('click', () => {
             mobileMenu.classList.toggle('hidden');
         });
 
-        async function validate () {
-            const account = document.getElementsByClassName("account-name");
+        async function validate() {
             try {
-                const token = localStorage.getItem("silk-token")
-                const response = await fetch("http://127.0.0.1:5000/api/validate/", {
+                const response = await fetch("/api/validate/", {
                     method: "POST",
-                    headers: {
-                        "Content-type": "application/json; charset=UTF-8"
-                    },
-                    body: JSON.stringify({
-                        token: token
-                    })
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ token: token })
                 });
                 const data = await response.json();
-                server_active = true;
                 if (data.status === "Success") {
                     logged_in = true;
-                    account[0].innerText = data.username;
-                    account[1].innerText = data.username;
-                    window.location.href = "manage.html";
+                    for(let el of accountNameElements) el.innerText = data.username;
+
+                    // Show admin links if user is admin
+                    if (data.username === "admin") {
+                        admin_links.style.display = "flex";
+                    }
                 }
             } catch (err) {
-                console.error(`Failed to fetch from server. ${err}`)
+                window.location.href = "login.html";
             }
         }
-
-        validate()
 
         async function register () {
             const user = document.getElementById("username").value;
             const password = document.getElementById("password").value;
-            const response = await fetch("http://127.0.0.1:5000/api/register/", {
+            const response = await fetch("/api/register/", {
                 method: "POST",
                 headers: {
                     "Content-type": "application/json; charset=UTF-8"
@@ -499,16 +505,9 @@
             }
         }
 
-        function account () {
-            if (!logged_in) {
-                window.location.href = "login.html";
-            } else {
-                window.location.href = "account.html";
-            }
-        }
-
         function logOut () {
             localStorage.removeItem("silk-token");
+            localStorage.removeItem("user");
             window.location.href = "index.html";
         }
 
@@ -519,6 +518,9 @@
                 window.location.href = "login.html";
             }
         }
+
+        validate();
+        
     </script>
 </body>
 </html>

@@ -203,6 +203,9 @@
             background-color: #374151; /* hover:bg-gray-700 */
             color: #fff; /* hover:text-white */
         }
+        #admin-links {
+            display: none;
+        }
 
         /* Desktop Socials */
         .desktop-socials {
@@ -350,6 +353,9 @@
                     <a href="index.html" class="nav-link">Main</a>
                     <a href="manage.html" class="nav-link">Manage</a>
                     <a href="ide.html" class="nav-link">IDE</a>
+                    <div id="admin-links">
+                        <a href="admin-panel.html" class="nav-link">Admin Panel</a>
+                    </div>
                     <a href="about.html" class="nav-link">About</a>
                 </nav>
                 
@@ -391,6 +397,9 @@
                 <a href="index.html" class="nav-link">Main</a>
                 <a href="manage.html" class="nav-link">Manage</a>
                 <a href="ide.html" class="nav-link">IDE</a>
+                <div id="admin-links">
+                    <a href="admin-panel.html" class="nav-link">Admin Panel</a>
+                </div>
                 <a href="about.html" class="nav-link">About</a>
                 <div class="mobile-socials">
                     <a href="feed.xml" class="social-link"><i class="fa fa-rss-square"></i></a>
@@ -421,57 +430,47 @@
     </div>
 
     <script>
-        // JavaScript for mobile menu togglement and account validation
+        // JavaScript for mobile menu togglement and account management
         const mobileMenuButton = document.getElementById('mobile-menu-button');
         const mobileMenu = document.getElementById('mobile-menu');
         const container = document.getElementById("account-option-container");
+        const admin_links = document.getElementById("admin-links");
+        const accountNameElements = document.getElementsByClassName("account-name");
+        const token = localStorage.getItem("silk-token");
         let logged_in = false;
 
         mobileMenuButton.addEventListener('click', () => {
             mobileMenu.classList.toggle('hidden');
         });
 
-        async function validate () {
-            const account = document.getElementsByClassName("account-name");
+        async function validate() {
             try {
-                const token = localStorage.getItem("silk-token")
-                const response = await fetch("http://127.0.0.1:5000/api/validate/", {
+                const response = await fetch("/api/validate/", {
                     method: "POST",
-                    headers: {
-                        "Content-type": "application/json; charset=UTF-8"
-                    },
-                    body: JSON.stringify({
-                        token: token
-                    })
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ token: token })
                 });
                 const data = await response.json();
-                server_active = true;
                 if (data.status === "Success") {
                     logged_in = true;
-                    account[0].innerText = data.username;
-                    account[1].innerText = data.username;
+                    for(let el of accountNameElements) el.innerText = data.username;
+
+                    // Show admin links if user is admin
+                    if (data.username === "admin") {
+                        admin_links.style.display = "flex";
+                    }
                 }
             } catch (err) {
-                console.error(`Failed to fetch from server. ${err}`)
-            }
-        }
-
-        validate();
-
-        function login () {
-            if (!logged_in) {
                 window.location.href = "login.html";
-            } else {
-                window.location.href = "manage.html";
             }
         }
 
-        function register () {
-            if (!logged_in) {
-                window.location.href = "register.html";
-            } else {
-                window.location.href = "manage.html";
-            }
+        function login() {
+            window.location.href = "login.html";
+        }
+
+        function register() {
+            window.location.href = "register.html";
         }
 
         function logOut () {
@@ -486,6 +485,9 @@
                 window.location.href = "login.html";
             }
         }
+
+        validate();
+        
     </script>
 </body>
 </html>

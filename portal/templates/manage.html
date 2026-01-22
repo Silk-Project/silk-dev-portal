@@ -337,6 +337,9 @@
             background-color: #374151; /* hover:bg-gray-700 */
             color: #fff; /* hover:text-white */
         }
+        #admin-links {
+            display: none;
+        }
 
         /* Desktop Socials */
         .desktop-socials {
@@ -537,6 +540,9 @@
                     <a href="index.html" class="nav-link">Main</a>
                     <a href="manage.html" class="nav-link">Manage</a>
                     <a href="ide.html" class="nav-link">IDE</a>
+                    <div id="admin-links">
+                        <a href="admin-panel.html" class="nav-link">Admin Panel</a>
+                    </div>
                     <a href="about.html" class="nav-link">About</a>
                 </nav>
                 
@@ -578,6 +584,9 @@
                 <a href="index.html" class="nav-link">Main</a>
                 <a href="manage.html" class="nav-link">Manage</a>
                 <a href="ide.html" class="nav-link">IDE</a>
+                <div id="admin-links">
+                    <a href="admin-panel.html" class="nav-link">Admin Panel</a>
+                </div>
                 <a href="about.html" class="nav-link">About</a>
                 <div class="mobile-socials">
                     <a href="feed.xml" class="social-link"><i class="fa fa-rss-square"></i></a>
@@ -645,50 +654,43 @@
         // JavaScript for mobile menu toggle
         const mobileMenuButton = document.getElementById('mobile-menu-button');
         const mobileMenu = document.getElementById('mobile-menu');
+        const container = document.getElementById("account-option-container");
+        const admin_links = document.getElementById("admin-links");
+        const accountNameElements = document.getElementsByClassName("account-name");
+        const token = localStorage.getItem("silk-token");
         let logged_in = false;
 
         mobileMenuButton.addEventListener('click', () => {
             mobileMenu.classList.toggle('hidden');
         });
 
-        async function validate () {
-            const account = document.getElementsByClassName("account-name");
+        async function validate() {
             try {
-                const token = localStorage.getItem("silk-token")
-                const response = await fetch("http://127.0.0.1:5000/api/validate/", {
+                const response = await fetch("/api/validate/", {
                     method: "POST",
-                    headers: {
-                        "Content-type": "application/json; charset=UTF-8"
-                    },
-                    body: JSON.stringify({
-                        token: token
-                    })
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ token: token })
                 });
                 const data = await response.json();
-                server_active = true;
                 if (data.status === "Success") {
                     logged_in = true;
-                    account[0].innerText = data.username;
-                    account[1].innerText = data.username;
+                    for(let el of accountNameElements) el.innerText = data.username;
+
+                    // Show admin links if user is admin
+                    if (data.username === "admin") {
+                        admin_links.style.display = "flex";
+                    }
                 } else {
                     window.location.href = "login.html";
                 }
             } catch (err) {
-                console.error(`Failed to fetch from server. ${err}`)
                 window.location.href = "login.html";
-            }
-        }
-
-        function account () {
-            if (!logged_in) {
-                window.location.href = "login.html";
-            } else {
-                window.location.href = "account.html";
             }
         }
 
         function logOut () {
             localStorage.removeItem("silk-token");
+            localStorage.removeItem("user");
             window.location.href = "index.html";
         }
 
@@ -700,7 +702,8 @@
             }
         }
 
-        validate();
+        if(!token) window.location.href = "login.html";
+        else validate();
 
         // JavaScript for managing containers
         const containerList = document.getElementById('container-list');
@@ -713,8 +716,6 @@
         const closeLogBtn = document.getElementById('close-log-btn');
         const statusload = document.getElementById('statusload');
         const statloadtext = document.getElementById('statloadtext');
-        const token = localStorage.getItem("silk-token");
-        const container = document.getElementById("account-option-container");
 
         // Dialog
         const diacontainer = document.getElementById('diacontainer');
@@ -737,7 +738,7 @@
         async function fetchContainers() {
             try {
                 toggleLoadanim(true, "Fetching Containers...");
-                const response = await fetch('http://127.0.0.1:5000/api/containers/', {
+                const response = await fetch('/api/containers/', {
                         method: "POST",
                         headers: {
                             "Content-type": "application/json; charset=UTF-8"
@@ -781,7 +782,7 @@
         }
 
         async function fetchLogs(containerId) {
-            const response = await fetch(`http://127.0.0.1:5000/api/containers/${containerId}/logs`);
+            const response = await fetch(`/api/containers/${containerId}/logs`);
             const data = await response.json();
             logOutput.textContent = data.logs;
             logBox.scrollTop = logBox.scrollHeight;
@@ -794,7 +795,7 @@
         createContainerBtn.addEventListener('click', async () => {
             toggleLoadanim(true, "Creating Container...");
             try {
-                await fetch('http://127.0.0.1:5000/api/containers/create', {
+                await fetch('/api/containers/create', {
                     method: "POST",
                     headers: {
                         "Content-type": "application/json; charset=UTF-8"
@@ -817,7 +818,7 @@
             diacontainer.style.display = "none";
             toggleLoadanim(true, "Deleting Containers...");
                 try {
-                    await fetch('http://127.0.0.1:5000/api/containers/delete_all', {
+                    await fetch('/api/containers/delete_all', {
                         method: "DELETE",
                         headers: {
                             "Content-type": "application/json; charset=UTF-8"
@@ -841,7 +842,7 @@
                 const containerId = e.target.dataset.id;
                 toggleLoadanim(true, "Deleting Container...");
                 try {
-                    await fetch(`http://127.0.0.1:5000/api/containers/${containerId}`, {
+                    await fetch(`/api/containers/${containerId}`, {
                         method: "DELETE",
                         headers: {
                             "Content-type": "application/json; charset=UTF-8"
@@ -859,7 +860,7 @@
                 const containerId = e.target.dataset.id;
                 toggleLoadanim(true, "Attempting to build...");
                 try {
-                    await fetch(`http://127.0.0.1:5000/api/containers/${containerId}/build`, {
+                    await fetch(`/api/containers/${containerId}/build`, {
                         method: "POST",
                         headers: {
                             "Content-type": "application/json; charset=UTF-8"

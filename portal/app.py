@@ -553,10 +553,6 @@ def container_logs(container_id):
     else:
         return jsonify({"logs": ""})
 
-@app.route("/ide.html")
-def ide_page():
-    return render_template("ide.html")
-
 @app.route("/api/ide/start", methods=['POST'])
 def start_ide_api():
     # Validate token
@@ -633,7 +629,7 @@ def start_ide_api():
         )
         container.exec_run(start_cmd, detach=True)
         
-        time.sleep(3) # Wait for startup
+        time.sleep(5) # Wait for startup
         
         # Get host port
         container.reload()
@@ -671,6 +667,14 @@ def register_page():
 @app.route("/manage.html")
 def manage_page():
     return render_template("manage.html")
+
+@app.route("/ide.html")
+def ide_page():
+    return render_template("ide.html")
+
+@app.route("/admin-panel.html")
+def admin_panel_page():
+    return render_template("admin-panel.html")
 
 @app.route("/about.html")
 def about_page():
