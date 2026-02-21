@@ -495,7 +495,7 @@ def build_container(container_id):
                     build_cmd = [
                         "/bin/sh", "-c",
                         "apt-get update && "
-                        "apt-get install -y sudo git build-essential gcc-14 genext2fs cmake curl libmpfr-dev libmpc-dev libgmp-dev e2fsprogs ninja-build qemu-system-gui qemu-system-x86 qemu-utils ccache rsync unzip texinfo libssl-dev zlib1g-dev && "
+                        "apt-get install -y sudo git build-essential gcc-14 g++-14 genext2fs cmake curl libmpfr-dev libmpc-dev libgmp-dev e2fsprogs ninja-build qemu-system-gui qemu-system-x86 qemu-utils ccache rsync unzip texinfo libssl-dev zlib1g-dev && "
                         "id -u builder >/dev/null 2>&1 || useradd -m -s /bin/bash builder && "
                         "id -u builder >/dev/null 2>&1 && usermod -aG sudo builder && "
                         "(grep -qxF 'builder ALL=(ALL) NOPASSWD: ALL' /etc/sudoers || echo 'builder ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers) && " + \
